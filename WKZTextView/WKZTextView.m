@@ -1,8 +1,8 @@
 //
-//  WKZTextView.m
+//  ZTextView.m
 //  Hejiajinrong
 //
-//  Created by lostw on 15/5/30.
+//  Created by william on 15/5/30.
 //  Copyright (c) 2015年 Myth. All rights reserved.
 //
 
@@ -15,6 +15,7 @@
 
 @implementation WKZTextView
 @synthesize placeholderColor = _placeholderColor;
+@synthesize placeholderFont = _placeholderFont;
 - (instancetype)initWithFrame:(CGRect)frame
 {
     if (self = [super initWithFrame:frame]) {
@@ -35,34 +36,55 @@
 - (void)commonInit
 {
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onTextChange:) name:UITextViewTextDidChangeNotification object:self];
-
+    
     [self.layer insertSublayer:self.placeholderLayer atIndex:0];
-
+    
 }
 
 
 - (void)layoutSubviews
 {
-    self.placeholderLayer.frame = CGRectMake(4, 8, self.bounds.size.width - 8, self.bounds.size.height - 16);
+    self.placeholderLayer.frame = CGRectMake(self.textContainerInset.left + self.textContainer.lineFragmentPadding, self.textContainerInset.top, self.bounds.size.width - self.textContainerInset.left - self.textContainerInset.right - self.textContainer.lineFragmentPadding * 2, self.bounds.size.height - self.textContainerInset.top - self.textContainerInset.bottom);
+    [super layoutSubviews];
 }
 
 - (void)onTextChange:(NSNotification*) notification {
-//    [CATransaction begin];
-//    [CATransaction setDisableActions:YES];
+    //    [CATransaction begin];
+    //    [CATransaction setDisableActions:YES];
     self.placeholderLayer.hidden = (self.text.length > 0);
-//    [CATransaction commit];
+    //    [CATransaction commit];
 }
 
 - (void)setPlaceholder:(NSString *)placeholder
 {
     _placeholder = placeholder;
-    self.placeholderLayer.string = placeholder;
+    [self wrapperPlaceholder];
+}
+
+- (void)wrapperPlaceholder
+{
+    if (self.placeholder.length) {
+    self.placeholderLayer.string = [[NSAttributedString alloc] initWithString:self.placeholder attributes:@{NSFontAttributeName: self.placeholderFont, NSForegroundColorAttributeName: self.placeholderColor}];
+    }
+}
+
+- (void)setFont:(UIFont *)font
+{
+    [super setFont:font];
+    [self wrapperPlaceholder];
+}
+
+- (void)setPlaceholderFont:(UIFont *)placeholderFont
+{
+    _placeholderFont = placeholderFont;
+    [self wrapperPlaceholder];
 }
 
 - (void)setPlaceholderColor:(UIColor *)placeholderColor
 {
     _placeholderColor = placeholderColor;
-    self.placeholderLayer.foregroundColor = placeholderColor.CGColor;
+    [self wrapperPlaceholder];
+
 }
 
 - (UIColor *)placeholderColor
@@ -72,15 +94,28 @@
     }
     
     return [UIColor colorWithRed:153/255.0 green:153/255.0 blue:153/255.0 alpha:1];
+}
+
+- (UIFont *)placeholderFont
+{
+    if (!_placeholderFont) {
+        if (self.font) {
+            return self.font;
+        }
+        
+        return [UIFont systemFontOfSize:17];    //default textview font
+    }
     
+    return _placeholderFont;
 }
 
 - (CATextLayer *)placeholderLayer
 {
     if (!_placeholderLayer) {
         _placeholderLayer = [CATextLayer layer];
-        _placeholderLayer.font = (__bridge CFTypeRef)([UIFont systemFontOfSize:12]);
-        _placeholderLayer.fontSize = 14;
+//        _placeholderLayer.font = (__bridge CFTypeRef)self.placeholderFont;
+//        _placeholderLayer.fontSize = self.placeholderFont.pointSize;
+//        _placeholderLayer.foregroundColor = self.placeholderColor.CGColor;
         _placeholderLayer.truncationMode = @"end";
         _placeholderLayer.wrapped = YES;
         _placeholderLayer.contentsScale = [UIScreen mainScreen].scale;

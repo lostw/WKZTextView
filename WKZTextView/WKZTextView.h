@@ -7,8 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+
 IB_DESIGNABLE
 @interface WKZTextView : UITextView
 @property (strong, nonatomic) IBInspectable NSString *placeholder;
 @property (strong, nonatomic) IBInspectable UIColor *placeholderColor;
+@property (strong, nonatomic) IBInspectable UIFont *placeholderFont;
+
 @end
